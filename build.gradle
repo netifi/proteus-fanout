@@ -1,0 +1,15 @@
+subprojects {
+    apply plugin: 'idea'
+
+    group 'io.netifi.proteus.fanout'
+    version '1.0.0'
+
+    // Proteus Versions
+    ext {
+        proteusVersion = '0.4.3'
+    }
+
+    repositories {
+        jcenter()
+    }
+}

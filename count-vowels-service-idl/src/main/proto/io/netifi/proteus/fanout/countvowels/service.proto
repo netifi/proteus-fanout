@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package io.netifi.proteus.fanout.countvowels;
+
+option java_package = "io.netifi.proteus.fanout.countvowels";
+option java_outer_classname = "VowelCounterProto";
+option java_multiple_files = true;
+
+service VowelCounter {
+
+    // Returns a Hello World Message
+    rpc CountVowels (CountRequest) returns (CountResponse) {}
+}
+
+message CountRequest {
+    string target = 1;
+}
+
+message CountResponse {
+    int32 count = 1;
+}

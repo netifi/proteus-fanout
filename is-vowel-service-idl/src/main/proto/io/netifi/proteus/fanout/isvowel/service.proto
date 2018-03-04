@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package io.netifi.proteus.fanout.isvowel;
+
+option java_package = "io.netifi.proteus.fanout.isvowel";
+option java_outer_classname = "IsVowelProto";
+option java_multiple_files = true;
+
+service VowelChecker {
+
+    // Returns a Hello World Message
+    rpc IsVowel (IsVowelRequest) returns (IsVowelResponse) {}
+}
+
+message IsVowelRequest {
+    string target = 1;
+}
+
+message IsVowelResponse {
+    bool vowel = 1;
+}

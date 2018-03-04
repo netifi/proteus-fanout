@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package io.netifi.proteus.fanout.randomstring;
+
+option java_package = "io.netifi.proteus.fanout.randomstring";
+option java_outer_classname = "RandomStringProto";
+option java_multiple_files = true;
+
+service RandomStringGenerator {
+
+    // Returns a Hello World Message
+    rpc GenerateString (RandomStringRequest) returns (stream RandomStringResponse) {}
+}
+
+message RandomStringRequest {
+    int32 min = 1;
+    int32 max = 2;
+}
+
+message RandomStringResponse {
+    string generated = 1;
+}

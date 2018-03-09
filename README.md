@@ -1,6 +1,4 @@
 # proteus-fanout
-[![Build Status](https://travis-ci.org/netifi/proteus-fanout.svg?branch=master)](https://travis-ci.org/netifi/proteus-fanout)
-
 This project demonstrates fanout, back-pressure, and composition with Netifi Proteus. 
 
 ## Bugs and Feedback

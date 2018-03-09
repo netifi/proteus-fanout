@@ -3,7 +3,7 @@ This project demonstrates fanout, back-pressure, and composition with Netifi Pro
 
 
 ## Bugs and Feedback
-For bugs, questions and discussions please use the [Github Issues](https://github.com/netifi/proteus-quickstart/issues).
+For bugs, questions and discussions please use the [Github Issues](https://github.com/netifi/proteus-fanout/issues).
 
 ## License
 Copyright 2018 Netifi Inc.

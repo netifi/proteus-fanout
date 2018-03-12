@@ -47,7 +47,7 @@ public class Main {
   public static void main(String... args) {
     int min = 5;
     int max = 25;
-    int numberOfValues = 10_000;
+    int numberOfValues = 1_000_000_000;
 
     Main main = new Main();
     main.countVowelsFromStrings(min, max, numberOfValues);

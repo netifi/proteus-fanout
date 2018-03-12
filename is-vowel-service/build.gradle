@@ -1,8 +1,29 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.bmuschko:gradle-docker-plugin:3.2.3'
+    }
+}
+
+
 plugins {
     id 'java'
     id 'application'
 }
 
+apply plugin: 'com.bmuschko.docker-java-application'
+
+docker {
+    javaApplication {
+        baseImage = 'openjdk:8-jre-alpine'
+        maintainer = 'Netifi'
+        ports = []
+        tag = 'netifidcos.azurecr.io/fanout/is-vowel-service:latest'
+    }
+}
 sourceCompatibility = 1.8
 
 dependencies {
@@ -17,6 +38,7 @@ dependencies {
 }
 
 mainClassName = 'io.netifi.proteus.fanout.isvowel.VowelCheckerMain'
+
 run {
     systemProperties System.getProperties()
 }

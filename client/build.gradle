@@ -1,6 +1,28 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.bmuschko:gradle-docker-plugin:3.2.3'
+    }
+}
+
+
 plugins {
     id 'java'
     id 'application'
+}
+
+apply plugin: 'com.bmuschko.docker-java-application'
+
+docker {
+    javaApplication {
+        baseImage = 'openjdk:8-jre-alpine'
+        maintainer = 'Netifi'
+        ports = []
+        tag = 'netifidcos.azurecr.io/fanout/fanout-client:latest'
+    }
 }
 
 sourceCompatibility = 1.8

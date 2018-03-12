@@ -23,16 +23,34 @@ public class Main {
   private Mono<VowelCounterClient> vowelCounterClient;
 
   public Main() {
+    long accountId = Long.getLong("ACCOUNT_ID", 100);
+    int minHostsAtStartup = Integer.getInteger("MIN_HOSTS_AT_STARTUP", 1);
+    int poolSize = Integer.getInteger("POOL_SIZE", 1);
+    long accessKey = Long.getLong("ACCESS_KEY", 7685465987873703191L);
+    String accessToken = System.getProperty("ACCESS_TOKEN", "PYYgV9XHSJ/3KqgK5wYjz+73MeA=");
+    String host = System.getProperty("ROUTER_HOST", "localhost");
+    int port = Integer.getInteger("ROUTER_PORT", 8001);
+  
+    System.out.println("system properties [");
+    System.getProperties()
+        .forEach(
+            (k, v) -> {
+              System.out.print(k + ": " + v + ", ");
+            });
+  
+    System.out.println("\n]");
+    
     // Build Netifi Proteus Connection
     this.netifi =
         Netifi.builder()
             .group("fanout.client") // Group name of client
-            .accountId(100)
-            .accessKey(7685465987873703191L)
-            .minHostsAtStartup(1)
-            .accessToken("PYYgV9XHSJ/3KqgK5wYjz+73MeA=")
-            .host("localhost") // Proteus Router Host
-            .port(8001) // Proteus Router Port
+            .accountId(accountId)
+            .minHostsAtStartup(minHostsAtStartup)
+            .poolSize(poolSize)
+            .accessKey(accessKey)
+            .accessToken(accessToken)
+            .host(host) // Proteus Router Host
+            .port(port) // Proteus Router Port
             .build();
 
     randomStringGeneratorClient =
@@ -45,9 +63,13 @@ public class Main {
   }
 
   public static void main(String... args) {
-    int min = 5;
-    int max = 25;
-    int numberOfValues = 1_000_000_000;
+    int min = Integer.getInteger("MIN", 5);
+    int max = Integer.getInteger("MAX", 25);
+    int numberOfValues = Integer.getInteger("NUM_VOWELS", 10_000);
+
+    logger.info("min string size {}", min);
+    logger.info("max string size {}", max);
+    logger.info("number of vowels {}", numberOfValues);
 
     Main main = new Main();
     main.countVowelsFromStrings(min, max, numberOfValues);

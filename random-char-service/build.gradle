@@ -17,11 +17,16 @@ plugins {
 apply plugin: 'com.bmuschko.docker-java-application'
 
 docker {
+    registryCredentials {
+        url = 'https://netifi.azurecr.io'
+        username = 'netifi'
+        password = 'xv06MJfkZA17wCmy1v9e7kanMtvTsg5+'
+    }
     javaApplication {
         baseImage = 'openjdk:8-jre-alpine'
         maintainer = 'Netifi'
         ports = []
-        tag = 'netifidcos.azurecr.io/fanout/random-char-service:latest'
+        tag = 'netifi.azurecr.io/fanout/random-char-service:latest'
     }
 }
 
@@ -39,3 +44,23 @@ dependencies {
 }
 
 mainClassName = 'io.netifi.proteus.fanout.randomchar.RandomCharMain'
+
+applicationDefaultJvmArgs = [
+        '-XX:+UnlockExperimentalVMOptions',
+        '-XX:+UseCGroupMemoryLimitForHeap',
+        '-XX:MaxRAMFraction=1',
+        '-XX:+UseG1GC',
+        '-XX:MaxGCPauseMillis=200',
+        '-XX:+AlwaysPreTouch',
+        '-XX:+UseStringDeduplication',
+        '-XX:+ExplicitGCInvokesConcurrent',
+        '-XX:+ParallelRefProcEnabled',
+        '-XX:HeapDumpPath=/',
+        '-XX:+PrintGCDateStamps',
+        '-verbose:gc',
+        '-XX:+PrintGCDetails',
+        '-Xloggc:gc.log',
+        '-XX:+UseGCLogFileRotation',
+        '-XX:NumberOfGCLogFiles=10',
+        '-XX:GCLogFileSize=100M'
+]

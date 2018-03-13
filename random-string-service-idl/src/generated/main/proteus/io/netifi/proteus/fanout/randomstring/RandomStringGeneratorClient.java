@@ -1,7 +1,7 @@
 package io.netifi.proteus.fanout.randomstring;
 
 @javax.annotation.Generated(
-    value = "by Proteus proto compiler (version 0.4.3)",
+    value = "by Proteus proto compiler (version 0.4.4)",
     comments = "Source: io/netifi/proteus/fanout/countvowels/service.proto")
 public final class RandomStringGeneratorClient implements RandomStringGenerator {
   private final io.rsocket.RSocket rSocket;

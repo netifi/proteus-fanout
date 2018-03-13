@@ -3,7 +3,7 @@ package io.netifi.proteus.fanout.countvowels;
 /**
  */
 @javax.annotation.Generated(
-    value = "by Proteus proto compiler (version 0.4.3)",
+    value = "by Proteus proto compiler (version 0.4.4)",
     comments = "Source: io/netifi/proteus/fanout/countvowels/service.proto")
 public interface VowelCounter {
   int NAMESPACE_ID = -557106202;

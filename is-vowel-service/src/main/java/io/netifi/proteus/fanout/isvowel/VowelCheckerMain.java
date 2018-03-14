@@ -17,6 +17,8 @@ public class VowelCheckerMain {
     String accessToken = System.getProperty("ACCESS_TOKEN", "PYYgV9XHSJ/3KqgK5wYjz+73MeA=");
     String host = System.getProperty("ROUTER_HOST", "localhost");
     int port = Integer.getInteger("ROUTER_PORT", 8001);
+    int low = Integer.getInteger("LOW", 250);
+    int high = Integer.getInteger("HIGH", 1500);
   
     System.out.println("system properties [");
     System.getProperties()
@@ -44,7 +46,7 @@ public class VowelCheckerMain {
 
     logger.info("starting vowel checker with a delay -> " + delayed);
     // Add Service to Respond to Requests
-    netifi.addService(new VowelCheckerServer(new DefaultVowelChecker(delayed)));
+    netifi.addService(new VowelCheckerServer(new DefaultVowelChecker(delayed, low, high)));
 
     netifi.onClose().block();
   }

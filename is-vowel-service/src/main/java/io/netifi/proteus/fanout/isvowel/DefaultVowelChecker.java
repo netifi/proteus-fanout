@@ -12,9 +12,15 @@ public class DefaultVowelChecker implements VowelChecker {
   private static final Logger logger = LogManager.getLogger(DefaultVowelChecker.class);
 
   private boolean hasDelay;
+  
+  private int low;
+  
+  private int high;
 
-  public DefaultVowelChecker(boolean hasDelay) {
+  public DefaultVowelChecker(boolean hasDelay, int low, int high) {
     this.hasDelay = hasDelay;
+    this.low = low;
+    this.high = high;
   }
 
   @Override
@@ -41,7 +47,7 @@ public class DefaultVowelChecker implements VowelChecker {
     IsVowelResponse response = IsVowelResponse.newBuilder().setVowel(vowel).build();
     logger.info(c + " is vowel -> " + vowel);
 
-    long delay = ThreadLocalRandom.current().nextLong(250, 1_500);
+    long delay = ThreadLocalRandom.current().nextLong(low, high);
 
     if (hasDelay) {
       return Mono.delay(Duration.ofMillis(delay)).then(Mono.just(response));

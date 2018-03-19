@@ -7,7 +7,7 @@ subprojects {
 
     // Proteus Versions
     ext {
-        proteusVersion = '0.4.4'
+        proteusVersion = '0.4.5'
     }
 
     repositories {

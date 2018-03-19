@@ -62,7 +62,7 @@ public class RandomCharMain {
         .publishOn(Schedulers.single())
         .subscribe(i -> {
           try {
-            pg.pushAdd(registry.getPrometheusRegistry(), "fanout.randomCharGenerator", Collections.singletonMap("destination", destination));
+            pg.pushAdd(registry.getPrometheusRegistry(), "fanout.randomCharGenerator", Collections.singletonMap("instance", destination));
           } catch (IOException e) {
             logger.error(e);
           }

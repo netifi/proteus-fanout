@@ -58,7 +58,7 @@ public class RandomStringMain {
         .connect("fanout.randomCharGenerator")
         .doOnNext(
             socket -> {
-              RandomCharGeneratorClient client = new RandomCharGeneratorClient(socket);
+              RandomCharGeneratorClient client = new RandomCharGeneratorClient(socket, registry);
 
               // Add Service to Respond to Requests
               netifi.addService(
@@ -72,7 +72,7 @@ public class RandomStringMain {
         .publishOn(Schedulers.single())
         .subscribe(i -> {
           try {
-            pg.pushAdd(registry.getPrometheusRegistry(), "fanout.randomCharGenerator", Collections.singletonMap("destination", destination));
+            pg.pushAdd(registry.getPrometheusRegistry(), "fanout.randomCharGenerator", Collections.singletonMap("instance", destination));
           } catch (IOException e) {
             logger.error(e);
           }

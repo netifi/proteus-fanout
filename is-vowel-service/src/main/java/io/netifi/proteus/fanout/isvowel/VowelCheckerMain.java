@@ -1,10 +1,8 @@
 package io.netifi.proteus.fanout.isvowel;
 
-import io.micrometer.core.instrument.Clock;
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.netifi.proteus.Netifi;
-import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.PushGateway;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -69,7 +67,7 @@ public class VowelCheckerMain {
         .publishOn(Schedulers.single())
         .subscribe(i -> {
           try {
-            pg.pushAdd(registry.getPrometheusRegistry(), "fanout.isVowel", Collections.singletonMap("destination", destination));
+            pg.pushAdd(registry.getPrometheusRegistry(), "fanout.isVowel", Collections.singletonMap("instance", destination));
           } catch (IOException e) {
             logger.error(e);
           }

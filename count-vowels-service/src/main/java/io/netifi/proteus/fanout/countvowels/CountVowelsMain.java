@@ -61,7 +61,7 @@ public class CountVowelsMain {
         .doOnNext(
             socket -> {
               System.out.println("looking for isVowel service");
-              VowelCheckerClient client = new VowelCheckerClient(socket);
+              VowelCheckerClient client = new VowelCheckerClient(socket, registry);
 
               // Add Service to Respond to Requests
               netifi.addService(new VowelCounterServer(new DefaultVowelCounter(client), registry));
@@ -76,7 +76,7 @@ public class CountVowelsMain {
         .publishOn(Schedulers.single())
         .subscribe(i -> {
           try {
-            pg.pushAdd(registry.getPrometheusRegistry(), "fanout.vowelcounter", Collections.singletonMap("destination", destination));
+            pg.pushAdd(registry.getPrometheusRegistry(), "fanout.vowelcounter", Collections.singletonMap("instance", destination));
           } catch (IOException e) {
             logger.error(e);
           }

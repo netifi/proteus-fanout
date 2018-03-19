@@ -8,7 +8,6 @@ buildscript {
     }
 }
 
-
 plugins {
     id 'java'
     id 'application'
@@ -36,6 +35,8 @@ dependencies {
 
     compile "io.netifi.proteus:client:$proteusVersion"
     compile 'com.google.protobuf:protobuf-java:3.5.0'
+    compile 'io.micrometer:micrometer-registry-prometheus:1.0.0-rc.9'
+    compile 'io.prometheus:simpleclient_pushgateway:0.2.0'
 
     compile 'org.apache.logging.log4j:log4j-api:2.8.2'
     compile 'org.apache.logging.log4j:log4j-core:2.8.2'

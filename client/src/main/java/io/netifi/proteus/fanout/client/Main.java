@@ -83,7 +83,7 @@ public class Main {
         .publishOn(Schedulers.single())
         .subscribe(i -> {
           try {
-            pg.pushAdd(registry.getPrometheusRegistry(), "fanout.randomCharGenerator", Collections.singletonMap("instance", destination));
+            pg.pushAdd(registry.getPrometheusRegistry(), "fanout.client", Collections.singletonMap("instance", destination));
           } catch (IOException e) {
             logger.error(e);
           }
@@ -113,7 +113,8 @@ public class Main {
         getRandomStringsFlux(min, max)
             .doOnNext(s -> logger.info("counting string -> " + s))
             // .flatMap(this::countVowels)
-            .flatMap(s -> countVowels(s), 8)
+            .flatMap(s -> countVowels(s), 64)
+            .retry()
             .scan(0, (c1, c2) -> c1 + c2)
             .doOnNext(count -> logger.info("vowels currently found -> " + count))
             .takeUntil(count -> count >= numberOfValues)

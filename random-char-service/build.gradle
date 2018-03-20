@@ -26,7 +26,7 @@ docker {
         baseImage = 'openjdk:8-jre-alpine'
         maintainer = 'Netifi'
         ports = []
-        tag = "netifi.azurecr.io/fanout/random-char-service:${version}"
+        tag = "netifi.azurecr.io/fanout/random-char-service:latest"
     }
 }
 

@@ -1,11 +1,11 @@
-job "is-vowel" {
+job "is-vowel-delay" {
 
   region = "us-west"
   datacenters = ["westus2-1"]
   type = "service"
 
   group "is-vowel-service" {
-    count = 3
+    count = 1
 
     task "is-vowel-service" {
       driver = "docker"
@@ -35,6 +35,9 @@ job "is-vowel" {
       env {
         IS_VOWEL_SERVICE_OPTS=<<EOF
           -DROUTER_HOST=edge.prd.netifi.io
+          -Ddelayed=true
+          -DLOW=10
+          -DHIGH=100
           EOF
       }
     }

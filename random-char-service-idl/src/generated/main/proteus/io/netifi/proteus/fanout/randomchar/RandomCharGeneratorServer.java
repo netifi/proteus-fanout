@@ -1,7 +1,7 @@
 package io.netifi.proteus.fanout.randomchar;
 
 @javax.annotation.Generated(
-    value = "by Proteus proto compiler (version 0.4.8)",
+    value = "by Proteus proto compiler (version 0.4.9)",
     comments = "Source: io/netifi/proteus/fanout/randomchar/service.proto")
 public final class RandomCharGeneratorServer extends io.netifi.proteus.AbstractProteusService {
   private final RandomCharGenerator service;

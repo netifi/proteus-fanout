@@ -114,7 +114,6 @@ public class Main {
             .doOnNext(s -> logger.info("counting string -> " + s))
             // .flatMap(this::countVowels)
             .flatMap(s -> countVowels(s), 64)
-            .retry()
             .scan(0, (c1, c2) -> c1 + c2)
             .doOnNext(count -> logger.info("vowels currently found -> " + count))
             .takeUntil(count -> count >= numberOfValues)

@@ -1,7 +1,7 @@
 package io.netifi.proteus.fanout.isvowel;
 
 @javax.annotation.Generated(
-    value = "by Proteus proto compiler (version 0.4.8)",
+    value = "by Proteus proto compiler (version 0.4.9)",
     comments = "Source: io/netifi/proteus/fanout/isvowel/service.proto")
 public final class VowelCheckerServer extends io.netifi.proteus.AbstractProteusService {
   private final VowelChecker service;

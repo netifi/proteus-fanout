@@ -143,7 +143,7 @@ job "fanout" {
       env {
         CLIENT_OPTS=<<EOF
           -DROUTER_HOST=edge.prd.netifi.io
-          -DNUM_VOWELS=1000000
+          -DNUM_VOWELS=1000000000
           EOF
       }
     }

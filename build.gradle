@@ -7,10 +7,11 @@ subprojects {
 
     // Proteus Versions
     ext {
-        proteusVersion = '0.4.9'
+        proteusVersion = '0.5.1'
     }
 
     repositories {
+        mavenLocal()
         jcenter()
     }
 

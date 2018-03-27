@@ -1,17 +1,11 @@
 package io.netifi.proteus.fanout.randomchar;
 
-import io.micrometer.prometheus.PrometheusConfig;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import com.netflix.spectator.atlas.AtlasConfig;
+import io.micrometer.atlas.AtlasMeterRegistry;
 import io.netifi.proteus.Netifi;
-import io.prometheus.client.exporter.PushGateway;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import reactor.core.publisher.Flux;
-import reactor.core.scheduler.Schedulers;
 
-import java.io.IOException;
-import java.time.Duration;
-import java.util.Collections;
 import java.util.UUID;
 
 /** Starts the Random Char Server */
@@ -38,6 +32,20 @@ public class RandomCharMain {
 
     System.out.println("\n]");
 
+    AtlasMeterRegistry registry =
+        new AtlasMeterRegistry(
+            new AtlasConfig() {
+              @Override
+              public String get(String k) {
+                return null;
+              }
+
+              @Override
+              public boolean enabled() {
+                return false;
+              }
+            });
+
     // Build Netifi Connection
     Netifi netifi =
         Netifi.builder()
@@ -50,23 +58,11 @@ public class RandomCharMain {
             .accessToken(accessToken)
             .host(host) // Proteus Router Host
             .port(port) // Proteus Router Port
+            .meterRegistry(registry)
             .build();
 
     // Add Service to Respond to Requests
-    PrometheusMeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
     netifi.addService(new RandomCharGeneratorServer(new DefaultRandomCharGenerator(), registry));
-
-    // Push metrics to Prometheus
-    PushGateway pg = new PushGateway("edge.prd.netifi.io:9091");
-    Flux.interval(Duration.ofSeconds(5))
-        .publishOn(Schedulers.single())
-        .subscribe(i -> {
-          try {
-            pg.pushAdd(registry.getPrometheusRegistry(), "fanout.randomCharGenerator", Collections.singletonMap("instance", destination));
-          } catch (IOException e) {
-            logger.error(e);
-          }
-        });
 
     netifi.onClose().block();
   }

@@ -1,7 +1,7 @@
 package io.netifi.proteus.fanout.client;
 
-import io.micrometer.prometheus.PrometheusConfig;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import com.netflix.spectator.atlas.AtlasConfig;
+import io.micrometer.atlas.AtlasMeterRegistry;
 import io.netifi.proteus.Netifi;
 import io.netifi.proteus.fanout.countvowels.CountRequest;
 import io.netifi.proteus.fanout.countvowels.CountResponse;
@@ -9,16 +9,11 @@ import io.netifi.proteus.fanout.countvowels.VowelCounterClient;
 import io.netifi.proteus.fanout.randomstring.RandomStringGeneratorClient;
 import io.netifi.proteus.fanout.randomstring.RandomStringRequest;
 import io.netifi.proteus.fanout.randomstring.RandomStringResponse;
-import io.prometheus.client.exporter.PushGateway;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
-import java.io.IOException;
-import java.time.Duration;
-import java.util.Collections;
 import java.util.UUID;
 
 /** Starts the Fanout Client */
@@ -40,16 +35,31 @@ public class Main {
     String host = System.getProperty("ROUTER_HOST", "localhost");
     int port = Integer.getInteger("ROUTER_PORT", 8001);
     String destination = UUID.randomUUID().toString();
-  
+
     System.out.println("system properties [");
     System.getProperties()
         .forEach(
             (k, v) -> {
               System.out.print(k + ": " + v + ", ");
             });
-  
+
     System.out.println("\n]");
     
+    
+      AtlasMeterRegistry registry =
+          new AtlasMeterRegistry(
+              new AtlasConfig() {
+                  @Override
+                  public String get(String k) {
+                      return null;
+                  }
+                
+                  @Override
+                  public boolean enabled() {
+                      return false;
+                  }
+              });
+
     // Build Netifi Proteus Connection
     this.netifi =
         Netifi.builder()
@@ -62,9 +72,9 @@ public class Main {
             .accessToken(accessToken)
             .host(host) // Proteus Router Host
             .port(port) // Proteus Router Port
+            .meterRegistry(registry)
             .build();
 
-    PrometheusMeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
     randomStringGeneratorClient =
         netifi
             .connect("fanout.randomStringGenerator")
@@ -76,18 +86,6 @@ public class Main {
             .connect("fanout.vowelcounter")
             .map(socket -> new VowelCounterClient(socket, registry))
             .cache();
-
-    // Push metrics to Prometheus
-    PushGateway pg = new PushGateway("edge.prd.netifi.io:9091");
-    Flux.interval(Duration.ofSeconds(5))
-        .publishOn(Schedulers.single())
-        .subscribe(i -> {
-          try {
-            pg.pushAdd(registry.getPrometheusRegistry(), "fanout.client", Collections.singletonMap("instance", destination));
-          } catch (IOException e) {
-            logger.error(e);
-          }
-        });
   }
 
   public static void main(String... args) {

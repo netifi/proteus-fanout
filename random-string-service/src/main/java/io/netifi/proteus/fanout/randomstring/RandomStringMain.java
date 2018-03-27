@@ -1,18 +1,12 @@
 package io.netifi.proteus.fanout.randomstring;
 
-import io.micrometer.prometheus.PrometheusConfig;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import com.netflix.spectator.atlas.AtlasConfig;
+import io.micrometer.atlas.AtlasMeterRegistry;
 import io.netifi.proteus.Netifi;
 import io.netifi.proteus.fanout.randomchar.RandomCharGeneratorClient;
-import io.prometheus.client.exporter.PushGateway;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import reactor.core.publisher.Flux;
-import reactor.core.scheduler.Schedulers;
 
-import java.io.IOException;
-import java.time.Duration;
-import java.util.Collections;
 import java.util.UUID;
 
 /** Starts the Random String Server */
@@ -39,6 +33,20 @@ public class RandomStringMain {
 
     System.out.println("\n]");
 
+    AtlasMeterRegistry registry =
+        new AtlasMeterRegistry(
+            new AtlasConfig() {
+              @Override
+              public String get(String k) {
+                return null;
+              }
+
+              @Override
+              public boolean enabled() {
+                return false;
+              }
+            });
+
     // Build Netifi Connection
     Netifi netifi =
         Netifi.builder()
@@ -49,11 +57,10 @@ public class RandomStringMain {
             .poolSize(poolSize)
             .accessKey(accessKey)
             .accessToken(accessToken)
+            .meterRegistry(registry)
             .host(host) // Proteus Router Host
             .port(port) // Proteus Router Port
             .build();
-
-    PrometheusMeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
     netifi
         .connect("fanout.randomCharGenerator")
         .doOnNext(
@@ -62,22 +69,10 @@ public class RandomStringMain {
 
               // Add Service to Respond to Requests
               netifi.addService(
-                  new RandomStringGeneratorServer(new DefaultRandomStringGenerator(client), registry));
+                  new RandomStringGeneratorServer(
+                      new DefaultRandomStringGenerator(client), registry));
             })
         .block();
-
-    // Push metrics to Prometheus
-    PushGateway pg = new PushGateway("edge.prd.netifi.io:9091");
-    Flux.interval(Duration.ofSeconds(5))
-        .publishOn(Schedulers.single())
-        .subscribe(i -> {
-          try {
-            pg.pushAdd(registry.getPrometheusRegistry(), "fanout.randomStringGenerator", Collections.singletonMap("instance", destination));
-          } catch (IOException e) {
-            logger.error(e);
-          }
-        });
-
     netifi.onClose().block();
   }
 }

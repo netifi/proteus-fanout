@@ -1,18 +1,12 @@
 package io.netifi.proteus.fanout.countvowels;
 
-import io.micrometer.prometheus.PrometheusConfig;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import com.netflix.spectator.atlas.AtlasConfig;
+import io.micrometer.atlas.AtlasMeterRegistry;
 import io.netifi.proteus.Netifi;
 import io.netifi.proteus.fanout.isvowel.VowelCheckerClient;
-import io.prometheus.client.exporter.PushGateway;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import reactor.core.publisher.Flux;
-import reactor.core.scheduler.Schedulers;
 
-import java.io.IOException;
-import java.time.Duration;
-import java.util.Collections;
 import java.util.UUID;
 
 /** Starts Vowel Counter */
@@ -39,6 +33,21 @@ public class CountVowelsMain {
 
     System.out.println("\n]");
     
+    
+      AtlasMeterRegistry registry =
+          new AtlasMeterRegistry(
+              new AtlasConfig() {
+                  @Override
+                  public String get(String k) {
+                      return null;
+                  }
+                
+                  @Override
+                  public boolean enabled() {
+                      return false;
+                  }
+              });
+      
     // Build Netifi Connection
     Netifi netifi =
         Netifi.builder()
@@ -51,11 +60,11 @@ public class CountVowelsMain {
             .accessToken(accessToken)
             .host(host) // Proteus Router Host
             .port(port) // Proteus Router Port
+            .meterRegistry(registry)
             .build();
 
     logger.info("starting vowel counter");
 
-    PrometheusMeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
     netifi
         .connect("fanout.isVowel")
         .doOnNext(
@@ -69,18 +78,6 @@ public class CountVowelsMain {
         .block();
 
     logger.info("vowel counter started");
-
-    // Push metrics to Prometheus
-    PushGateway pg = new PushGateway("edge.prd.netifi.io:9091");
-    Flux.interval(Duration.ofSeconds(5))
-        .publishOn(Schedulers.single())
-        .subscribe(i -> {
-          try {
-            pg.pushAdd(registry.getPrometheusRegistry(), "fanout.vowelcounter", Collections.singletonMap("instance", destination));
-          } catch (IOException e) {
-            logger.error(e);
-          }
-        });
 
     netifi.onClose().block();
   }

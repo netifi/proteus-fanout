@@ -5,7 +5,7 @@ job "is-vowel" {
   type = "service"
 
   group "is-vowel-service" {
-    count = 3
+    count = 6
 
     task "is-vowel-service" {
       driver = "docker"

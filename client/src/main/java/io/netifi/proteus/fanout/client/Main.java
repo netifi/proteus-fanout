@@ -2,6 +2,9 @@ package io.netifi.proteus.fanout.client;
 
 import com.netflix.spectator.atlas.AtlasConfig;
 import io.micrometer.atlas.AtlasMeterRegistry;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.distribution.pause.ClockDriftPauseDetector;
+import io.micrometer.core.instrument.distribution.pause.PauseDetector;
 import io.netifi.proteus.Netifi;
 import io.netifi.proteus.fanout.countvowels.CountRequest;
 import io.netifi.proteus.fanout.countvowels.CountResponse;
@@ -14,6 +17,9 @@ import org.apache.logging.log4j.Logger;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /** Starts the Fanout Client */
@@ -44,22 +50,26 @@ public class Main {
             });
 
     System.out.println("\n]");
-    
-    
-      AtlasMeterRegistry registry =
-          new AtlasMeterRegistry(
-              new AtlasConfig() {
-                  @Override
-                  public String get(String k) {
-                      return null;
-                  }
-                
-                  @Override
-                  public boolean enabled() {
-                      return false;
-                  }
-              });
 
+    AtlasMeterRegistry registry =
+        new AtlasMeterRegistry(
+            new AtlasConfig() {
+              @Override
+              public Duration step() {
+                return Duration.ofSeconds(10);
+              }
+
+              @Override
+              public String get(String k) {
+                return null;
+              }
+
+              @Override
+              public boolean enabled() {
+                return false;
+              }
+            });
+    
     // Build Netifi Proteus Connection
     this.netifi =
         Netifi.builder()
@@ -99,16 +109,12 @@ public class Main {
 
     Main main = new Main();
     main.countVowelsFromStrings(min, max, numberOfValues);
-    main.shutdown();
-  }
-
-  private void shutdown() {
-    System.exit(0);
   }
 
   private void countVowelsFromStrings(int min, int max, int numberOfValues) {
     Integer total =
         getRandomStringsFlux(min, max)
+            .limitRate(64, 32)
             .doOnNext(s -> logger.info("counting string -> " + s))
             // .flatMap(this::countVowels)
             .flatMap(s -> countVowels(s), 64)

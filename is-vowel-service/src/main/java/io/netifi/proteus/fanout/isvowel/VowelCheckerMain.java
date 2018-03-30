@@ -6,6 +6,9 @@ import io.netifi.proteus.Netifi;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /** Starts Is Vowel Service */
@@ -22,7 +25,7 @@ public class VowelCheckerMain {
     int port = Integer.getInteger("ROUTER_PORT", 8001);
     int low = Integer.getInteger("LOW", 250);
     int high = Integer.getInteger("HIGH", 1500);
-    String destination = UUID.randomUUID().toString();
+    String destination = System.getProperty("DESTINATION", UUID.randomUUID().toString());
 
     System.out.println("system properties [");
     System.getProperties()
@@ -37,6 +40,11 @@ public class VowelCheckerMain {
         new AtlasMeterRegistry(
             new AtlasConfig() {
               @Override
+              public Duration step() {
+                return Duration.ofSeconds(10);
+              }
+
+              @Override
               public String get(String k) {
                 return null;
               }
@@ -45,8 +53,9 @@ public class VowelCheckerMain {
               public boolean enabled() {
                 return false;
               }
-            });
 
+            });
+    
     // Build Netifi Connection
     Netifi netifi =
         Netifi.builder()

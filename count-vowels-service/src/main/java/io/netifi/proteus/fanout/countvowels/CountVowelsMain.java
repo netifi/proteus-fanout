@@ -7,6 +7,9 @@ import io.netifi.proteus.fanout.isvowel.VowelCheckerClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /** Starts Vowel Counter */
@@ -32,22 +35,27 @@ public class CountVowelsMain {
             });
 
     System.out.println("\n]");
-    
-    
-      AtlasMeterRegistry registry =
-          new AtlasMeterRegistry(
-              new AtlasConfig() {
-                  @Override
-                  public String get(String k) {
-                      return null;
-                  }
-                
-                  @Override
-                  public boolean enabled() {
-                      return false;
-                  }
-              });
-      
+
+    AtlasMeterRegistry registry =
+        new AtlasMeterRegistry(
+            new AtlasConfig() {
+              @Override
+              public Duration step() {
+                return Duration.ofSeconds(10);
+              }
+
+              @Override
+              public String get(String k) {
+                return null;
+              }
+
+              @Override
+              public boolean enabled() {
+                return false;
+              }
+
+            });
+
     // Build Netifi Connection
     Netifi netifi =
         Netifi.builder()

@@ -29,7 +29,8 @@ public class DefaultVowelCounter implements VowelCounter {
     String[] split = target.split("");
 
     return Flux.just(split)
-        .flatMapSequential(s -> checkVowel(IsVowelRequest.newBuilder().setTarget(s).build()))
+        .limitRate(16, 8)
+        .flatMap(s -> checkVowel(IsVowelRequest.newBuilder().setTarget(s).build()))
         .filter(IsVowelResponse::getVowel)
         .count()
         .map(c -> CountResponse.newBuilder().setCount(c.intValue()).build())

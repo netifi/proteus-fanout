@@ -7,6 +7,9 @@ import io.netifi.proteus.fanout.randomchar.RandomCharGeneratorClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /** Starts the Random String Server */
@@ -37,6 +40,11 @@ public class RandomStringMain {
         new AtlasMeterRegistry(
             new AtlasConfig() {
               @Override
+              public Duration step() {
+                return Duration.ofSeconds(10);
+              }
+
+              @Override
               public String get(String k) {
                 return null;
               }
@@ -46,7 +54,7 @@ public class RandomStringMain {
                 return false;
               }
             });
-
+    
     // Build Netifi Connection
     Netifi netifi =
         Netifi.builder()

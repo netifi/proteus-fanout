@@ -34,7 +34,7 @@ job "is-vowel" {
 
       env {
         IS_VOWEL_SERVICE_OPTS=<<EOF
-          -DROUTER_HOST=edge.prd.netifi.io
+          -DBROKER_HOST=edge.prd.netifi.io
           EOF
       }
     }

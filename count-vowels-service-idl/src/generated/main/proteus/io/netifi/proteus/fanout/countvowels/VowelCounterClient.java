@@ -1,8 +1,11 @@
 package io.netifi.proteus.fanout.countvowels;
 
 @javax.annotation.Generated(
-    value = "by Proteus proto compiler (version 0.5.4)",
+    value = "by Proteus proto compiler (version 0.7.15)",
     comments = "Source: io/netifi/proteus/fanout/countvowels/service.proto")
+@io.netifi.proteus.annotations.internal.ProteusGenerated(
+    type = io.netifi.proteus.annotations.internal.ProteusResourceType.CLIENT,
+    idlClass = VowelCounter.class)
 public final class VowelCounterClient implements VowelCounter {
   private final io.rsocket.RSocket rSocket;
   private final java.util.function.Function<? super org.reactivestreams.Publisher<io.netifi.proteus.fanout.countvowels.CountResponse>, ? extends org.reactivestreams.Publisher<io.netifi.proteus.fanout.countvowels.CountResponse>> countVowels;
@@ -14,7 +17,7 @@ public final class VowelCounterClient implements VowelCounter {
 
   public VowelCounterClient(io.rsocket.RSocket rSocket, io.micrometer.core.instrument.MeterRegistry registry) {
     this.rSocket = rSocket;
-    this.countVowels = io.netifi.proteus.metrics.ProteusMetrics.timed(registry, "proteus.client", "namespace", "io.netifi.proteus.fanout.countvowels", "service", "VowelCounter", "method", "countVowels");
+    this.countVowels = io.netifi.proteus.metrics.ProteusMetrics.timed(registry, "proteus.client", "service", VowelCounter.SERVICE, "method", VowelCounter.METHOD_COUNT_VOWELS);
   }
 
   public reactor.core.publisher.Mono<io.netifi.proteus.fanout.countvowels.CountResponse> countVowels(io.netifi.proteus.fanout.countvowels.CountRequest message) {
@@ -26,9 +29,7 @@ public final class VowelCounterClient implements VowelCounter {
     return reactor.core.publisher.Mono.defer(new java.util.function.Supplier<reactor.core.publisher.Mono<io.rsocket.Payload>>() {
       @java.lang.Override
       public reactor.core.publisher.Mono<io.rsocket.Payload> get() {
-        final int length = io.netifi.proteus.frames.ProteusMetadata.computeLength(metadata);
-        io.netty.buffer.ByteBuf metadataBuf = io.netty.buffer.ByteBufAllocator.DEFAULT.directBuffer(length);
-        io.netifi.proteus.frames.ProteusMetadata.encode(metadataBuf, VowelCounter.NAMESPACE_ID, VowelCounter.SERVICE_ID, VowelCounter.METHOD_COUNT_VOWELS, metadata);
+        final io.netty.buffer.ByteBuf metadataBuf = io.netifi.proteus.frames.ProteusMetadata.encode(io.netty.buffer.ByteBufAllocator.DEFAULT, VowelCounter.SERVICE, VowelCounter.METHOD_COUNT_VOWELS, metadata);
         io.netty.buffer.ByteBuf data = serialize(message);
         return rSocket.requestResponse(io.rsocket.util.ByteBufPayload.create(data, metadataBuf));
       }
@@ -36,10 +37,11 @@ public final class VowelCounterClient implements VowelCounter {
   }
 
   private static io.netty.buffer.ByteBuf serialize(final com.google.protobuf.MessageLite message) {
-    io.netty.buffer.ByteBuf byteBuf = io.netty.buffer.ByteBufAllocator.DEFAULT.directBuffer(message.getSerializedSize());
+    int length = message.getSerializedSize();
+    io.netty.buffer.ByteBuf byteBuf = io.netty.buffer.ByteBufAllocator.DEFAULT.buffer(length);
     try {
-      message.writeTo(com.google.protobuf.CodedOutputStream.newInstance(byteBuf.nioBuffer(0, byteBuf.writableBytes())));
-      byteBuf.writerIndex(byteBuf.capacity());
+      message.writeTo(com.google.protobuf.CodedOutputStream.newInstance(byteBuf.internalNioBuffer(0, length)));
+      byteBuf.writerIndex(length);
       return byteBuf;
     } catch (Throwable t) {
       byteBuf.release();

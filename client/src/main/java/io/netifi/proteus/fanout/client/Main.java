@@ -2,10 +2,7 @@ package io.netifi.proteus.fanout.client;
 
 import com.netflix.spectator.atlas.AtlasConfig;
 import io.micrometer.atlas.AtlasMeterRegistry;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.distribution.pause.ClockDriftPauseDetector;
-import io.micrometer.core.instrument.distribution.pause.PauseDetector;
-import io.netifi.proteus.Netifi;
+import io.netifi.proteus.Proteus;
 import io.netifi.proteus.fanout.countvowels.CountRequest;
 import io.netifi.proteus.fanout.countvowels.CountResponse;
 import io.netifi.proteus.fanout.countvowels.VowelCounterClient;
@@ -18,29 +15,22 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 /** Starts the Fanout Client */
 public class Main {
   private static final Logger logger = LogManager.getLogger(Main.class);
 
-  private Netifi netifi;
+  private Proteus proteus;
 
-  private Mono<RandomStringGeneratorClient> randomStringGeneratorClient;
+  private RandomStringGeneratorClient randomStringGeneratorClient;
 
-  private Mono<VowelCounterClient> vowelCounterClient;
+  private VowelCounterClient vowelCounterClient;
 
   public Main() {
-    long accountId = Long.getLong("ACCOUNT_ID", 100);
-    int minHostsAtStartup = Integer.getInteger("MIN_HOSTS_AT_STARTUP", 1);
-    int poolSize = Integer.getInteger("POOL_SIZE", 1);
-    long accessKey = Long.getLong("ACCESS_KEY", 7685465987873703191L);
-    String accessToken = System.getProperty("ACCESS_TOKEN", "PYYgV9XHSJ/3KqgK5wYjz+73MeA=");
-    String host = System.getProperty("ROUTER_HOST", "localhost");
-    int port = Integer.getInteger("ROUTER_PORT", 8001);
-    String destination = UUID.randomUUID().toString();
+    long accessKey = Long.getLong("ACCESS_KEY", 3855261330795754807L);
+    String accessToken = System.getProperty("ACCESS_TOKEN", "kTBDVtfRBO4tHOnZzSyY5ym2kfY=");
+    String host = System.getProperty("BROKER_HOST", "localhost");
+    int port = Integer.getInteger("BROKER_PORT", 8001);
 
     System.out.println("system properties [");
     System.getProperties()
@@ -69,15 +59,11 @@ public class Main {
                 return false;
               }
             });
-    
+
     // Build Netifi Proteus Connection
-    this.netifi =
-        Netifi.builder()
+    this.proteus =
+        Proteus.builder()
             .group("fanout.client") // Group name of client
-            .destination(destination)
-            .accountId(accountId)
-            .minHostsAtStartup(minHostsAtStartup)
-            .poolSize(poolSize)
             .accessKey(accessKey)
             .accessToken(accessToken)
             .host(host) // Proteus Router Host
@@ -86,16 +72,9 @@ public class Main {
             .build();
 
     randomStringGeneratorClient =
-        netifi
-            .connect("fanout.randomStringGenerator")
-            .map(socket -> new RandomStringGeneratorClient(socket, registry))
-            .cache();
+        new RandomStringGeneratorClient(proteus.group("fanout.randomStringGenerator"), registry);
 
-    vowelCounterClient =
-        netifi
-            .connect("fanout.vowelcounter")
-            .map(socket -> new VowelCounterClient(socket, registry))
-            .cache();
+    vowelCounterClient = new VowelCounterClient(proteus.group("fanout.vowelcounter"), registry);
   }
 
   public static void main(String... args) {
@@ -114,11 +93,10 @@ public class Main {
   private void countVowelsFromStrings(int min, int max, int numberOfValues) {
     Integer total =
         getRandomStringsFlux(min, max)
-            .limitRate(64, 32)
-            .doOnNext(s -> logger.info("counting string -> " + s))
             // .flatMap(this::countVowels)
             .flatMap(s -> countVowels(s), 64)
             .scan(0, (c1, c2) -> c1 + c2)
+            .filter(count -> count % 1000 == 0)
             .doOnNext(count -> logger.info("vowels currently found -> " + count))
             .takeUntil(count -> count >= numberOfValues)
             .blockLast();
@@ -127,25 +105,14 @@ public class Main {
   }
 
   private Flux<String> getRandomStringsFlux(int min, int max) {
+    RandomStringRequest request = RandomStringRequest.newBuilder().setMin(min).setMax(max).build();
     return randomStringGeneratorClient
-        .flatMapMany(
-            client -> {
-              RandomStringRequest request =
-                  RandomStringRequest.newBuilder().setMin(min).setMax(max).build();
-
-              return client.generateString(request);
-            })
+        .generateString(request)
         .map(RandomStringResponse::getGenerated);
   }
 
   private Mono<Integer> countVowels(String target) {
-    return vowelCounterClient
-        .flatMap(
-            client -> {
-              CountRequest request = CountRequest.newBuilder().setTarget(target).build();
-
-              return client.countVowels(request);
-            })
-        .map(CountResponse::getCount);
+    CountRequest request = CountRequest.newBuilder().setTarget(target).build();
+    return vowelCounterClient.countVowels(request).map(CountResponse::getCount);
   }
 }

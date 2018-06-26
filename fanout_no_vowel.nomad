@@ -34,7 +34,7 @@ job "fanout" {
 
       env {
         COUNT_VOWELS_SERVICE_OPTS=<<EOF
-          -DROUTER_HOST=edge.prd.netifi.io
+          -DBROKER_HOST=edge.prd.netifi.io
           EOF
       }
     }
@@ -70,7 +70,7 @@ job "fanout" {
 
       env {
         RANDOM_CHAR_SERVICE_OPTS=<<EOF
-          -DROUTER_HOST=edge.prd.netifi.io
+          -DBROKER_HOST=edge.prd.netifi.io
           EOF
       }
     }
@@ -106,7 +106,7 @@ job "fanout" {
 
       env {
         RANDOM_STRING_SERVICE_OPTS=<<EOF
-          -DROUTER_HOST=edge.prd.netifi.io
+          -DBROKER_HOST=edge.prd.netifi.io
           EOF
       }
     }
@@ -142,7 +142,7 @@ job "fanout" {
 
       env {
         CLIENT_OPTS=<<EOF
-          -DROUTER_HOST=edge.prd.netifi.io
+          -DBROKER_HOST=edge.prd.netifi.io
           -DNUM_VOWELS=5000000
           EOF
       }

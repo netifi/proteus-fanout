@@ -1,30 +1,35 @@
 package io.netifi.proteus.fanout.randomchar;
 
 @javax.annotation.Generated(
-    value = "by Proteus proto compiler (version 0.5.4)",
+    value = "by Proteus proto compiler (version 0.7.15)",
     comments = "Source: io/netifi/proteus/fanout/randomchar/service.proto")
+@io.netifi.proteus.annotations.internal.ProteusGenerated(
+    type = io.netifi.proteus.annotations.internal.ProteusResourceType.SERVICE,
+    idlClass = RandomCharGenerator.class)
+@javax.inject.Named(
+    value ="RandomCharGeneratorServer")
 public final class RandomCharGeneratorServer extends io.netifi.proteus.AbstractProteusService {
   private final RandomCharGenerator service;
   private final java.util.function.Function<? super org.reactivestreams.Publisher<io.rsocket.Payload>, ? extends org.reactivestreams.Publisher<io.rsocket.Payload>> generateChar;
-
-  public RandomCharGeneratorServer(RandomCharGenerator service) {
+  @javax.inject.Inject
+  public RandomCharGeneratorServer(RandomCharGenerator service, java.util.Optional<io.micrometer.core.instrument.MeterRegistry> registry) {
     this.service = service;
-    this.generateChar = java.util.function.Function.identity();
-  }
+    if (!registry.isPresent()) {
+      this.generateChar = java.util.function.Function.identity();
+    } else {
+      this.generateChar = io.netifi.proteus.metrics.ProteusMetrics.timed(registry.get(), "proteus.server", "service", RandomCharGenerator.SERVICE, "method", RandomCharGenerator.METHOD_GENERATE_CHAR);
+    }
 
-  public RandomCharGeneratorServer(RandomCharGenerator service, io.micrometer.core.instrument.MeterRegistry registry) {
-    this.service = service;
-    this.generateChar = io.netifi.proteus.metrics.ProteusMetrics.timed(registry, "proteus.server", "namespace", "io.netifi.proteus.fanout.randomchar", "service", "RandomCharGenerator", "method", "generateChar");
   }
 
   @java.lang.Override
-  public int getNamespaceId() {
-    return RandomCharGenerator.NAMESPACE_ID;
+  public String getService() {
+    return RandomCharGenerator.SERVICE;
   }
 
   @java.lang.Override
-  public int getServiceId() {
-    return RandomCharGenerator.SERVICE_ID;
+  public Class<?> getServiceClass() {
+    return service.getClass();
   }
 
   @java.lang.Override
@@ -41,7 +46,7 @@ public final class RandomCharGeneratorServer extends io.netifi.proteus.AbstractP
   public reactor.core.publisher.Flux<io.rsocket.Payload> requestStream(io.rsocket.Payload payload) {
     try {
       io.netty.buffer.ByteBuf metadata = payload.sliceMetadata();
-      switch(io.netifi.proteus.frames.ProteusMetadata.methodId(metadata)) {
+      switch(io.netifi.proteus.frames.ProteusMetadata.getMethod(metadata)) {
         case RandomCharGenerator.METHOD_GENERATE_CHAR: {
           com.google.protobuf.CodedInputStream is = com.google.protobuf.CodedInputStream.newInstance(payload.getData());
           return service.generateChar(io.netifi.proteus.fanout.randomchar.RandomCharRequest.parseFrom(is), metadata).map(serializer).transform(generateChar);
@@ -71,10 +76,11 @@ public final class RandomCharGeneratorServer extends io.netifi.proteus.AbstractP
     new java.util.function.Function<com.google.protobuf.MessageLite, io.rsocket.Payload>() {
       @java.lang.Override
       public io.rsocket.Payload apply(com.google.protobuf.MessageLite message) {
-        io.netty.buffer.ByteBuf byteBuf = io.netty.buffer.ByteBufAllocator.DEFAULT.directBuffer(message.getSerializedSize());
+        int length = message.getSerializedSize();
+        io.netty.buffer.ByteBuf byteBuf = io.netty.buffer.ByteBufAllocator.DEFAULT.buffer(length);
         try {
-          message.writeTo(com.google.protobuf.CodedOutputStream.newInstance(byteBuf.nioBuffer(0, byteBuf.writableBytes())));
-          byteBuf.writerIndex(byteBuf.capacity());
+          message.writeTo(com.google.protobuf.CodedOutputStream.newInstance(byteBuf.internalNioBuffer(0, length)));
+          byteBuf.writerIndex(length);
           return io.rsocket.util.ByteBufPayload.create(byteBuf);
         } catch (Throwable t) {
           byteBuf.release();

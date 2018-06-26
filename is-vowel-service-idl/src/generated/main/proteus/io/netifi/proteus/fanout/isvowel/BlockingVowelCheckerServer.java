@@ -5,26 +5,28 @@ package io.netifi.proteus.fanout.isvowel;
     comments = "Source: io/netifi/proteus/fanout/isvowel/service.proto")
 @io.netifi.proteus.annotations.internal.ProteusGenerated(
     type = io.netifi.proteus.annotations.internal.ProteusResourceType.SERVICE,
-    idlClass = VowelChecker.class)
+    idlClass = BlockingVowelChecker.class)
 @javax.inject.Named(
-    value ="VowelCheckerServer")
-public final class VowelCheckerServer extends io.netifi.proteus.AbstractProteusService {
-  private final VowelChecker service;
+    value ="BlockingVowelCheckerServer")
+public final class BlockingVowelCheckerServer extends io.netifi.proteus.AbstractProteusService {
+  private final BlockingVowelChecker service;
+  private final reactor.core.scheduler.Scheduler scheduler;
   private final java.util.function.Function<? super org.reactivestreams.Publisher<io.rsocket.Payload>, ? extends org.reactivestreams.Publisher<io.rsocket.Payload>> isVowel;
   @javax.inject.Inject
-  public VowelCheckerServer(VowelChecker service, java.util.Optional<io.micrometer.core.instrument.MeterRegistry> registry) {
+  public BlockingVowelCheckerServer(BlockingVowelChecker service, java.util.Optional<reactor.core.scheduler.Scheduler> scheduler, java.util.Optional<io.micrometer.core.instrument.MeterRegistry> registry) {
+    this.scheduler = scheduler.orElse(reactor.core.scheduler.Schedulers.elastic());
     this.service = service;
     if (!registry.isPresent()) {
       this.isVowel = java.util.function.Function.identity();
     } else {
-      this.isVowel = io.netifi.proteus.metrics.ProteusMetrics.timed(registry.get(), "proteus.server", "service", VowelChecker.SERVICE, "method", VowelChecker.METHOD_IS_VOWEL);
+      this.isVowel = io.netifi.proteus.metrics.ProteusMetrics.timed(registry.get(), "proteus.server", "service", BlockingVowelChecker.SERVICE_ID, "method", BlockingVowelChecker.METHOD_IS_VOWEL);
     }
 
   }
 
   @java.lang.Override
   public String getService() {
-    return VowelChecker.SERVICE;
+    return BlockingVowelChecker.SERVICE_ID;
   }
 
   @java.lang.Override
@@ -44,7 +46,8 @@ public final class VowelCheckerServer extends io.netifi.proteus.AbstractProteusS
       switch(io.netifi.proteus.frames.ProteusMetadata.getMethod(metadata)) {
         case VowelChecker.METHOD_IS_VOWEL: {
           com.google.protobuf.CodedInputStream is = com.google.protobuf.CodedInputStream.newInstance(payload.getData());
-          return service.isVowel(io.netifi.proteus.fanout.isvowel.IsVowelRequest.parseFrom(is), metadata).map(serializer).transform(isVowel);
+          io.netifi.proteus.fanout.isvowel.IsVowelRequest message = io.netifi.proteus.fanout.isvowel.IsVowelRequest.parseFrom(is);
+          return reactor.core.publisher.Mono.fromSupplier(() -> service.isVowel(message, metadata)).map(serializer).transform(isVowel).subscribeOn(scheduler);
         }
         default: {
           return reactor.core.publisher.Mono.error(new UnsupportedOperationException());

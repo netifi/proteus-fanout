@@ -34,7 +34,7 @@ job "is-vowel-delay" {
 
       env {
         IS_VOWEL_SERVICE_OPTS=<<EOF
-          -DROUTER_HOST=edge.prd.netifi.io
+          -DBROKER_HOST=edge.prd.netifi.io
           -Ddelayed=true
           -DLOW=10
           -DHIGH=100

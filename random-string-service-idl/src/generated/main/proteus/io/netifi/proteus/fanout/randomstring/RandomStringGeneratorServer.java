@@ -1,30 +1,35 @@
 package io.netifi.proteus.fanout.randomstring;
 
 @javax.annotation.Generated(
-    value = "by Proteus proto compiler (version 0.5.4)",
+    value = "by Proteus proto compiler (version 0.7.15)",
     comments = "Source: io/netifi/proteus/fanout/countvowels/service.proto")
+@io.netifi.proteus.annotations.internal.ProteusGenerated(
+    type = io.netifi.proteus.annotations.internal.ProteusResourceType.SERVICE,
+    idlClass = RandomStringGenerator.class)
+@javax.inject.Named(
+    value ="RandomStringGeneratorServer")
 public final class RandomStringGeneratorServer extends io.netifi.proteus.AbstractProteusService {
   private final RandomStringGenerator service;
   private final java.util.function.Function<? super org.reactivestreams.Publisher<io.rsocket.Payload>, ? extends org.reactivestreams.Publisher<io.rsocket.Payload>> generateString;
-
-  public RandomStringGeneratorServer(RandomStringGenerator service) {
+  @javax.inject.Inject
+  public RandomStringGeneratorServer(RandomStringGenerator service, java.util.Optional<io.micrometer.core.instrument.MeterRegistry> registry) {
     this.service = service;
-    this.generateString = java.util.function.Function.identity();
-  }
+    if (!registry.isPresent()) {
+      this.generateString = java.util.function.Function.identity();
+    } else {
+      this.generateString = io.netifi.proteus.metrics.ProteusMetrics.timed(registry.get(), "proteus.server", "service", RandomStringGenerator.SERVICE, "method", RandomStringGenerator.METHOD_GENERATE_STRING);
+    }
 
-  public RandomStringGeneratorServer(RandomStringGenerator service, io.micrometer.core.instrument.MeterRegistry registry) {
-    this.service = service;
-    this.generateString = io.netifi.proteus.metrics.ProteusMetrics.timed(registry, "proteus.server", "namespace", "io.netifi.proteus.fanout.randomstring", "service", "RandomStringGenerator", "method", "generateString");
   }
 
   @java.lang.Override
-  public int getNamespaceId() {
-    return RandomStringGenerator.NAMESPACE_ID;
+  public String getService() {
+    return RandomStringGenerator.SERVICE;
   }
 
   @java.lang.Override
-  public int getServiceId() {
-    return RandomStringGenerator.SERVICE_ID;
+  public Class<?> getServiceClass() {
+    return service.getClass();
   }
 
   @java.lang.Override
@@ -41,7 +46,7 @@ public final class RandomStringGeneratorServer extends io.netifi.proteus.Abstrac
   public reactor.core.publisher.Flux<io.rsocket.Payload> requestStream(io.rsocket.Payload payload) {
     try {
       io.netty.buffer.ByteBuf metadata = payload.sliceMetadata();
-      switch(io.netifi.proteus.frames.ProteusMetadata.methodId(metadata)) {
+      switch(io.netifi.proteus.frames.ProteusMetadata.getMethod(metadata)) {
         case RandomStringGenerator.METHOD_GENERATE_STRING: {
           com.google.protobuf.CodedInputStream is = com.google.protobuf.CodedInputStream.newInstance(payload.getData());
           return service.generateString(io.netifi.proteus.fanout.randomstring.RandomStringRequest.parseFrom(is), metadata).map(serializer).transform(generateString);
@@ -71,10 +76,11 @@ public final class RandomStringGeneratorServer extends io.netifi.proteus.Abstrac
     new java.util.function.Function<com.google.protobuf.MessageLite, io.rsocket.Payload>() {
       @java.lang.Override
       public io.rsocket.Payload apply(com.google.protobuf.MessageLite message) {
-        io.netty.buffer.ByteBuf byteBuf = io.netty.buffer.ByteBufAllocator.DEFAULT.directBuffer(message.getSerializedSize());
+        int length = message.getSerializedSize();
+        io.netty.buffer.ByteBuf byteBuf = io.netty.buffer.ByteBufAllocator.DEFAULT.buffer(length);
         try {
-          message.writeTo(com.google.protobuf.CodedOutputStream.newInstance(byteBuf.nioBuffer(0, byteBuf.writableBytes())));
-          byteBuf.writerIndex(byteBuf.capacity());
+          message.writeTo(com.google.protobuf.CodedOutputStream.newInstance(byteBuf.internalNioBuffer(0, length)));
+          byteBuf.writerIndex(length);
           return io.rsocket.util.ByteBufPayload.create(byteBuf);
         } catch (Throwable t) {
           byteBuf.release();

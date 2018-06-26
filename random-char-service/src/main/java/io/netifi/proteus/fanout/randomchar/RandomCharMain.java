@@ -2,13 +2,12 @@ package io.netifi.proteus.fanout.randomchar;
 
 import com.netflix.spectator.atlas.AtlasConfig;
 import io.micrometer.atlas.AtlasMeterRegistry;
-import io.netifi.proteus.Netifi;
+import io.netifi.proteus.Proteus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 /** Starts the Random Char Server */
@@ -16,14 +15,10 @@ public class RandomCharMain {
   private static final Logger logger = LogManager.getLogger(RandomCharMain.class);
 
   public static void main(String... args) throws Exception {
-
-    long accountId = Long.getLong("ACCOUNT_ID", 100);
-    int minHostsAtStartup = Integer.getInteger("MIN_HOSTS_AT_STARTUP", 1);
-    int poolSize = Integer.getInteger("POOL_SIZE", 1);
-    long accessKey = Long.getLong("ACCESS_KEY", 7685465987873703191L);
-    String accessToken = System.getProperty("ACCESS_TOKEN", "PYYgV9XHSJ/3KqgK5wYjz+73MeA=");
-    String host = System.getProperty("ROUTER_HOST", "localhost");
-    int port = Integer.getInteger("ROUTER_PORT", 8001);
+    long accessKey = Long.getLong("ACCESS_KEY", 3855261330795754807L);
+    String accessToken = System.getProperty("ACCESS_TOKEN", "kTBDVtfRBO4tHOnZzSyY5ym2kfY=");
+    String host = System.getProperty("BROKER_HOST", "localhost");
+    int port = Integer.getInteger("BROKER_PORT", 8001);
     String destination = UUID.randomUUID().toString();
 
     System.out.println("system properties [");
@@ -52,17 +47,13 @@ public class RandomCharMain {
               public boolean enabled() {
                 return false;
               }
-
             });
-    
+
     // Build Netifi Connection
-    Netifi netifi =
-        Netifi.builder()
+    Proteus proteus =
+        Proteus.builder()
             .group("fanout.randomCharGenerator") // Group name of service
             .destination(destination)
-            .accountId(accountId)
-            .minHostsAtStartup(minHostsAtStartup)
-            .poolSize(poolSize)
             .accessKey(accessKey)
             .accessToken(accessToken)
             .host(host) // Proteus Router Host
@@ -71,8 +62,8 @@ public class RandomCharMain {
             .build();
 
     // Add Service to Respond to Requests
-    netifi.addService(new RandomCharGeneratorServer(new DefaultRandomCharGenerator(), registry));
+    proteus.addService(new RandomCharGeneratorServer(new DefaultRandomCharGenerator(), Optional.of(registry)));
 
-    netifi.onClose().block();
+    proteus.onClose().block();
   }
 }

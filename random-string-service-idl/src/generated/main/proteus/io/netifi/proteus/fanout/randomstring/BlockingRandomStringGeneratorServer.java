@@ -1,30 +1,32 @@
-package io.netifi.proteus.fanout.isvowel;
+package io.netifi.proteus.fanout.randomstring;
 
 @javax.annotation.Generated(
     value = "by Proteus proto compiler (version 0.7.15)",
-    comments = "Source: io/netifi/proteus/fanout/isvowel/service.proto")
+    comments = "Source: io/netifi/proteus/fanout/countvowels/service.proto")
 @io.netifi.proteus.annotations.internal.ProteusGenerated(
     type = io.netifi.proteus.annotations.internal.ProteusResourceType.SERVICE,
-    idlClass = VowelChecker.class)
+    idlClass = BlockingRandomStringGenerator.class)
 @javax.inject.Named(
-    value ="VowelCheckerServer")
-public final class VowelCheckerServer extends io.netifi.proteus.AbstractProteusService {
-  private final VowelChecker service;
-  private final java.util.function.Function<? super org.reactivestreams.Publisher<io.rsocket.Payload>, ? extends org.reactivestreams.Publisher<io.rsocket.Payload>> isVowel;
+    value ="BlockingRandomStringGeneratorServer")
+public final class BlockingRandomStringGeneratorServer extends io.netifi.proteus.AbstractProteusService {
+  private final BlockingRandomStringGenerator service;
+  private final reactor.core.scheduler.Scheduler scheduler;
+  private final java.util.function.Function<? super org.reactivestreams.Publisher<io.rsocket.Payload>, ? extends org.reactivestreams.Publisher<io.rsocket.Payload>> generateString;
   @javax.inject.Inject
-  public VowelCheckerServer(VowelChecker service, java.util.Optional<io.micrometer.core.instrument.MeterRegistry> registry) {
+  public BlockingRandomStringGeneratorServer(BlockingRandomStringGenerator service, java.util.Optional<reactor.core.scheduler.Scheduler> scheduler, java.util.Optional<io.micrometer.core.instrument.MeterRegistry> registry) {
+    this.scheduler = scheduler.orElse(reactor.core.scheduler.Schedulers.elastic());
     this.service = service;
     if (!registry.isPresent()) {
-      this.isVowel = java.util.function.Function.identity();
+      this.generateString = java.util.function.Function.identity();
     } else {
-      this.isVowel = io.netifi.proteus.metrics.ProteusMetrics.timed(registry.get(), "proteus.server", "service", VowelChecker.SERVICE, "method", VowelChecker.METHOD_IS_VOWEL);
+      this.generateString = io.netifi.proteus.metrics.ProteusMetrics.timed(registry.get(), "proteus.server", "service", BlockingRandomStringGenerator.SERVICE_ID, "method", BlockingRandomStringGenerator.METHOD_GENERATE_STRING);
     }
 
   }
 
   @java.lang.Override
   public String getService() {
-    return VowelChecker.SERVICE;
+    return BlockingRandomStringGenerator.SERVICE_ID;
   }
 
   @java.lang.Override
@@ -39,27 +41,28 @@ public final class VowelCheckerServer extends io.netifi.proteus.AbstractProteusS
 
   @java.lang.Override
   public reactor.core.publisher.Mono<io.rsocket.Payload> requestResponse(io.rsocket.Payload payload) {
-    try {
-      io.netty.buffer.ByteBuf metadata = payload.sliceMetadata();
-      switch(io.netifi.proteus.frames.ProteusMetadata.getMethod(metadata)) {
-        case VowelChecker.METHOD_IS_VOWEL: {
-          com.google.protobuf.CodedInputStream is = com.google.protobuf.CodedInputStream.newInstance(payload.getData());
-          return service.isVowel(io.netifi.proteus.fanout.isvowel.IsVowelRequest.parseFrom(is), metadata).map(serializer).transform(isVowel);
-        }
-        default: {
-          return reactor.core.publisher.Mono.error(new UnsupportedOperationException());
-        }
-      }
-    } catch (Throwable t) {
-      return reactor.core.publisher.Mono.error(t);
-    } finally {
-      payload.release();
-    }
+    return reactor.core.publisher.Mono.error(new UnsupportedOperationException("Request-Response not implemented."));
   }
 
   @java.lang.Override
   public reactor.core.publisher.Flux<io.rsocket.Payload> requestStream(io.rsocket.Payload payload) {
-    return reactor.core.publisher.Flux.error(new UnsupportedOperationException("Request-Stream not implemented."));
+    try {
+      io.netty.buffer.ByteBuf metadata = payload.sliceMetadata();
+      switch(io.netifi.proteus.frames.ProteusMetadata.getMethod(metadata)) {
+        case BlockingRandomStringGenerator.METHOD_GENERATE_STRING: {
+          com.google.protobuf.CodedInputStream is = com.google.protobuf.CodedInputStream.newInstance(payload.getData());
+          io.netifi.proteus.fanout.randomstring.RandomStringRequest message = io.netifi.proteus.fanout.randomstring.RandomStringRequest.parseFrom(is);
+          return reactor.core.publisher.Flux.defer(() -> reactor.core.publisher.Flux.fromIterable(service.generateString(message, metadata)).map(serializer).transform(generateString)).subscribeOn(scheduler);
+        }
+        default: {
+          return reactor.core.publisher.Flux.error(new UnsupportedOperationException());
+        }
+      }
+    } catch (Throwable t) {
+      return reactor.core.publisher.Flux.error(t);
+    } finally {
+      payload.release();
+    }
   }
 
   @java.lang.Override

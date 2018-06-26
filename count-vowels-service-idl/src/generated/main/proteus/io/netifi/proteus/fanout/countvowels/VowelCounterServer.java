@@ -1,30 +1,35 @@
 package io.netifi.proteus.fanout.countvowels;
 
 @javax.annotation.Generated(
-    value = "by Proteus proto compiler (version 0.5.4)",
+    value = "by Proteus proto compiler (version 0.7.15)",
     comments = "Source: io/netifi/proteus/fanout/countvowels/service.proto")
+@io.netifi.proteus.annotations.internal.ProteusGenerated(
+    type = io.netifi.proteus.annotations.internal.ProteusResourceType.SERVICE,
+    idlClass = VowelCounter.class)
+@javax.inject.Named(
+    value ="VowelCounterServer")
 public final class VowelCounterServer extends io.netifi.proteus.AbstractProteusService {
   private final VowelCounter service;
   private final java.util.function.Function<? super org.reactivestreams.Publisher<io.rsocket.Payload>, ? extends org.reactivestreams.Publisher<io.rsocket.Payload>> countVowels;
-
-  public VowelCounterServer(VowelCounter service) {
+  @javax.inject.Inject
+  public VowelCounterServer(VowelCounter service, java.util.Optional<io.micrometer.core.instrument.MeterRegistry> registry) {
     this.service = service;
-    this.countVowels = java.util.function.Function.identity();
-  }
+    if (!registry.isPresent()) {
+      this.countVowels = java.util.function.Function.identity();
+    } else {
+      this.countVowels = io.netifi.proteus.metrics.ProteusMetrics.timed(registry.get(), "proteus.server", "service", VowelCounter.SERVICE, "method", VowelCounter.METHOD_COUNT_VOWELS);
+    }
 
-  public VowelCounterServer(VowelCounter service, io.micrometer.core.instrument.MeterRegistry registry) {
-    this.service = service;
-    this.countVowels = io.netifi.proteus.metrics.ProteusMetrics.timed(registry, "proteus.server", "namespace", "io.netifi.proteus.fanout.countvowels", "service", "VowelCounter", "method", "countVowels");
   }
 
   @java.lang.Override
-  public int getNamespaceId() {
-    return VowelCounter.NAMESPACE_ID;
+  public String getService() {
+    return VowelCounter.SERVICE;
   }
 
   @java.lang.Override
-  public int getServiceId() {
-    return VowelCounter.SERVICE_ID;
+  public Class<?> getServiceClass() {
+    return service.getClass();
   }
 
   @java.lang.Override
@@ -36,7 +41,7 @@ public final class VowelCounterServer extends io.netifi.proteus.AbstractProteusS
   public reactor.core.publisher.Mono<io.rsocket.Payload> requestResponse(io.rsocket.Payload payload) {
     try {
       io.netty.buffer.ByteBuf metadata = payload.sliceMetadata();
-      switch(io.netifi.proteus.frames.ProteusMetadata.methodId(metadata)) {
+      switch(io.netifi.proteus.frames.ProteusMetadata.getMethod(metadata)) {
         case VowelCounter.METHOD_COUNT_VOWELS: {
           com.google.protobuf.CodedInputStream is = com.google.protobuf.CodedInputStream.newInstance(payload.getData());
           return service.countVowels(io.netifi.proteus.fanout.countvowels.CountRequest.parseFrom(is), metadata).map(serializer).transform(countVowels);
@@ -71,10 +76,11 @@ public final class VowelCounterServer extends io.netifi.proteus.AbstractProteusS
     new java.util.function.Function<com.google.protobuf.MessageLite, io.rsocket.Payload>() {
       @java.lang.Override
       public io.rsocket.Payload apply(com.google.protobuf.MessageLite message) {
-        io.netty.buffer.ByteBuf byteBuf = io.netty.buffer.ByteBufAllocator.DEFAULT.directBuffer(message.getSerializedSize());
+        int length = message.getSerializedSize();
+        io.netty.buffer.ByteBuf byteBuf = io.netty.buffer.ByteBufAllocator.DEFAULT.buffer(length);
         try {
-          message.writeTo(com.google.protobuf.CodedOutputStream.newInstance(byteBuf.nioBuffer(0, byteBuf.writableBytes())));
-          byteBuf.writerIndex(byteBuf.capacity());
+          message.writeTo(com.google.protobuf.CodedOutputStream.newInstance(byteBuf.internalNioBuffer(0, length)));
+          byteBuf.writerIndex(length);
           return io.rsocket.util.ByteBufPayload.create(byteBuf);
         } catch (Throwable t) {
           byteBuf.release();

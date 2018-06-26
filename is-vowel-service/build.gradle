@@ -25,7 +25,7 @@ docker {
         baseImage = 'openjdk:8-jre-alpine'
         maintainer = 'Netifi'
         ports = []
-        tag = "netifi.azurecr.io/fanout/is-vowel-service:latest"
+        tag = "netifi.azurecr.io/soak-test/is-vowel-service:latest"
     }
 }
 sourceCompatibility = 1.8
@@ -35,11 +35,13 @@ dependencies {
 
     compile "io.netifi.proteus:client:$proteusVersion"
     compile 'com.google.protobuf:protobuf-java:3.5.0'
-    compile 'io.micrometer:micrometer-registry-atlas:1.0.2'
+    compile 'io.micrometer:micrometer-registry-atlas:1.0.3'
 
     compile 'org.apache.logging.log4j:log4j-api:2.8.2'
     compile 'org.apache.logging.log4j:log4j-core:2.8.2'
     compile 'org.apache.logging.log4j:log4j-slf4j-impl:2.8.2'
+
+    compile 'com.lmax:disruptor:3.3.6'
 }
 
 mainClassName = 'io.netifi.proteus.fanout.isvowel.VowelCheckerMain'
@@ -61,5 +63,6 @@ applicationDefaultJvmArgs = [
         '-Xloggc:gc.log',
         '-XX:+UseGCLogFileRotation',
         '-XX:NumberOfGCLogFiles=10',
-        '-XX:GCLogFileSize=100M'
+        '-XX:GCLogFileSize=100M',
+        '-DLog4jContextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector'
 ]
